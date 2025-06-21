@@ -5,17 +5,22 @@ using dotnetapp.Models;
 
 namespace dotnetapp
 {
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString { get; } =
+            "User ID=sa;password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=false;Persist Security Info=False;Encrypt=False;";
+    }
+
     public class Program
     {
-        static string connectionString = "User Id=sa;Password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=false;Persist Security Info=False;Encrypt=False";
-        static SqlDataAdapter adapter;
-        static DataSet dataSet = new DataSet();
+        private string connection = ConnectionStringProvider.ConnectionString;
 
         public static void Main(string[] args)
         {
+            Program program = new Program();
             while (true)
             {
-                Console.WriteLine("\nMenu");
+                Console.WriteLine("\nMenu:");
                 Console.WriteLine("1. Add Vehicle");
                 Console.WriteLine("2. List Vehicles");
                 Console.WriteLine("3. Delete Vehicle");
@@ -26,13 +31,13 @@ namespace dotnetapp
                 switch (choice)
                 {
                     case "1":
-                        AddVehicle();
+                        program.AddVehicle();
                         break;
                     case "2":
-                        ListVehicles();
+                        program.ListVehicles();
                         break;
                     case "3":
-                        DeleteVehicle();
+                        program.DeleteVehicle();
                         break;
                     case "4":
                         Console.WriteLine("Exiting the application...");
@@ -44,7 +49,7 @@ namespace dotnetapp
             }
         }
 
-        static void AddVehicle()
+        public void AddVehicle()
         {
             Console.WriteLine("Enter details for the new Vehicle:");
             Console.Write("Make: ");
@@ -56,72 +61,98 @@ namespace dotnetapp
             Console.Write("Last Maintenance Date (dd-MM-yyyy): ");
             string date = Console.ReadLine();
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
-                SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
-                adapter.Fill(dataSet, "Vehicles");
+                using (SqlConnection conn = new SqlConnection(connection))
+                {
+                    SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
+                    DataSet dataSet = new DataSet();
+                    adapter.Fill(dataSet, "Vehicles");
 
-                DataRow newRow = dataSet.Tables["Vehicles"].NewRow();
-                newRow["Make"] = make;
-                newRow["Model"] = model;
-                newRow["Year"] = year;
-                newRow["LastMaintenanceDate"] = date;
+                    DataRow newRow = dataSet.Tables["Vehicles"].NewRow();
+                    newRow["Make"] = make;
+                    newRow["Model"] = model;
+                    newRow["Year"] = year;
+                    newRow["LastMaintenanceDate"] = date;
 
-                dataSet.Tables["Vehicles"].Rows.Add(newRow);
-                adapter.Update(dataSet, "Vehicles");
+                    dataSet.Tables["Vehicles"].Rows.Add(newRow);
 
-                Console.WriteLine("Vehicle added successfully.");
+                    SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+                    adapter.Update(dataSet, "Vehicles");
+
+                    Console.WriteLine("Vehicle added successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not add: " + ex.Message);
             }
         }
 
-        static void ListVehicles()
+        public void ListVehicles()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
-                dataSet.Clear();
-                adapter.Fill(dataSet, "Vehicles");
-
-                if (dataSet.Tables["Vehicles"].Rows.Count == 0)
+                using (SqlConnection conn = new SqlConnection(connection))
                 {
-                    Console.WriteLine("No Vehicles available.");
-                    return;
-                }
+                    SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
+                    DataSet dataSet = new DataSet();
+                    adapter.Fill(dataSet, "Vehicles");
 
-                foreach (DataRow row in dataSet.Tables["Vehicles"].Rows)
-                {
-                    Console.WriteLine($"VehicleID: {row["VehicleID"]} \tMake: {row["Make"]} \tModel: {row["Model"]} \tYear: {row["Year"]} \tLast Maintenance Date: {row["LastMaintenanceDate"]}");
+                    if (dataSet.Tables["Vehicles"].Rows.Count == 0)
+                    {
+                        Console.WriteLine("No Vehicles available.");
+                        return;
+                    }
+
+                    foreach (DataRow row in dataSet.Tables["Vehicles"].Rows)
+                    {
+                        Console.WriteLine($"VehicleID: {row["VehicleID"]}, Make: {row["Make"]}, Model: {row["Model"]}, Year: {row["Year"]}, Last Maintenance Date: {row["LastMaintenanceDate"]}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not list: " + ex.Message);
             }
         }
 
-        static void DeleteVehicle()
+        public void DeleteVehicle()
         {
             Console.Write("Enter VehicleID to delete: ");
             int id = int.Parse(Console.ReadLine());
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
-                SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
-                dataSet.Clear();
-                adapter.Fill(dataSet, "Vehicles");
-
-                DataRow[] rows = dataSet.Tables["Vehicles"].Select($"VehicleID = {id}");
-                if (rows.Length == 0)
+                using (SqlConnection conn = new SqlConnection(connection))
                 {
-                    Console.WriteLine("vehicle not found");
-                    return;
-                }
+                    SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
+                    DataSet dataSet = new DataSet();
+                    adapter.Fill(dataSet, "Vehicles");
 
-                rows[0].Delete();
-                adapter.Update(dataSet, "Vehicles");
-                Console.WriteLine("Vehicle deleted successfully.");
+                    DataRow[] rows = dataSet.Tables["Vehicles"].Select($"VehicleID = {id}");
+                    if (rows.Length == 0)
+                    {
+                        Console.WriteLine("Vehicle not found.");
+                        return;
+                    }
+
+                    rows[0].Delete();
+                    SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+                    adapter.Update(dataSet, "Vehicles");
+
+                    Console.WriteLine("Vehicle deleted successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while deleting: " + ex.Message);
             }
         }
     }
 }
+
+                   
 
 
 namespace dotnetapp.Models
