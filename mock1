@@ -1,0 +1,134 @@
+using System;
+using System.Data;
+using Microsoft.Data.SqlClient;
+using dotnetapp.Models;
+
+class Program
+{
+    static string connectionString = "Server=localhost;Database=appdb;User Id=sa;Password=examlyMssql@123;";
+    static SqlDataAdapter adapter;
+    static DataSet dataSet = new DataSet();
+
+    static void Main()
+    {
+        while (true)
+        {
+            Console.WriteLine("\nMenu");
+            Console.WriteLine("1. Add Vehicle");
+            Console.WriteLine("2. List Vehicles");
+            Console.WriteLine("3. Delete Vehicle");
+            Console.WriteLine("4. Exit");
+            Console.Write("Enter your choice (1-4): ");
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    AddVehicle();
+                    break;
+                case "2":
+                    ListVehicles();
+                    break;
+                case "3":
+                    DeleteVehicle();
+                    break;
+                case "4":
+                    Console.WriteLine("Exiting the application...");
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice");
+                    break;
+            }
+        }
+    }
+
+    static void AddVehicle()
+    {
+        Console.WriteLine("Enter details for the new Vehicle:");
+        Console.Write("Make: ");
+        string make = Console.ReadLine();
+        Console.Write("Model: ");
+        string model = Console.ReadLine();
+        Console.Write("Year: ");
+        int year = int.Parse(Console.ReadLine());
+        Console.Write("Last Maintenance Date (dd-MM-yyyy): ");
+        string date = Console.ReadLine();
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        SqlDataAdapter("SELECT * FROM Vehicles", conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            adapter.Fill(dataSet, "Vehicles");
+
+            DataRow newRow = dataSet.Tables["Vehicles"].NewRow();
+            newRow["Make"] = make;
+            newRow["Model"] = model;
+            newRow["Year"] = year;
+            newRow["LastMaintenanceDate"] = date;
+
+            dataSet.Tables["Vehicles"].Rows.Add(newRow);
+            Console.WriteLine("Vehicle added successfully.");
+        }
+    }
+
+    static void ListVehicles()
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
+            dataSet.Clear();
+            adapter.Fill(dataSet, "Vehicles");
+
+            if (dataSet.Tables["Vehicles"].Rows.Count == 0)
+            {
+                Console.WriteLine("No Vehicles available.");
+                return;
+            }
+
+            foreach (DataRow row in dataSet.Tables["Vehicles"].Rows)
+            {
+                Console.WriteLine($"VehicleID: {row["VehicleID"]} \tMake: {row["Make"]} \tModel: {row["Model"]} \tYear: {row["Year"]} \tLast Maintenance Date: {row["LastMaintenanceDate"]}");
+            }
+        }
+    }
+
+    static void DeleteVehicle()
+    {
+        Console.Write("Enter VehicleID to delete: ");
+        int id = int.Parse(Console.ReadLine());
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            adapter = new SqlDataAdapter("SELECT * FROM Vehicles", conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            dataSet.Clear();
+            adapter.Fill(dataSet, "Vehicles");
+
+            DataRow[] rows = dataSet.Tables["Vehicles"].Select($"VehicleID = {id}");
+            if (rows.Length == 0)
+            {
+                Console.WriteLine("vehicle not found");
+                return;
+            }
+
+            rows[0].Delete();
+            adapter.Update(dataSet, "Vehicles");
+            Console.WriteLine("Vehicle deleted successfully.");
+        }
+    }
+}
+
+
+
+
+
+namespace dotnetapp.Models
+{
+    public class Vehicle
+    {
+        public int VehicleID { get; set; }
+        public string Make { get; set; }
+        public string Model { get; set; }
+        public int Year { get; set; }
+        public string LastMaintenanceDate { get; set; }
+    }
+}
