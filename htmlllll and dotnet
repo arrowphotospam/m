@@ -1,0 +1,320 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using DisconnectedArchitecture.Models;
+ 
+namespace DisconnectedArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=False;Persist Security Info =False;Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Customer
+            // 2. List Customers
+            // 3. Update Customer Email
+            // 4. Delete Customer
+            // 5. Exit
+            Console.WriteLine("Menu:");
+            Console.WriteLine("1.Add");
+            Console.WriteLine("2.List");
+            Console.WriteLine("3.Update");
+            Console.WriteLine("4.Delete");
+            Console.WriteLine("5.Exit");
+            int choice =int.Parse(Console.ReadLine());
+            switch(choice){
+                case 1: Customer c=new Customer();
+                      Console.Write("Id: ");c.CustomerID=int.Parse(Console.ReadLine());
+                      Console.Write("FirstName: ");c.FirstName=Console.ReadLine();
+                      Console.Write("LastName: ");c.LastName=Console.ReadLine();
+                      Console.Write("Email: ");c.Email=Console.ReadLine();
+                      Console.Write("PhoneNumber: ");c.PhoneNumber=Console.ReadLine();
+                      AddCustomer(c);break;
+                case 2:ListCustomers();break;
+                case 3:Console.Write("Id: ");int id=int.Parse(Console.ReadLine());
+                       Console.Write("New EMail: ");string newEmail=Console.ReadLine();
+                       UpdateCustomerEmail(id,newEmail);break;
+                case 4:Console.Write("Id: ");int id1=int.Parse(Console.ReadLine());
+                       DeleteCustomer(id1);break;
+                case 5:Console.WriteLine("exiting application...");break;
+                default:Console.WriteLine("Invalid choice");break;
+            }
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddCustomer(Customer customer)
+        {
+             // Write your code to add a new customer
+             string query="select * from Customers;";
+             DataTable dt=GetDataTable(query);
+             DataRow dr = dt.NewRow();
+             dr[0]=customer.CustomerID;
+             dr[1]=customer.FirstName;
+             dr[2]=customer.LastName;
+             dr[3]=customer.Email;
+             dr[4]=customer.PhoneNumber;
+             dt.Rows.Add(dr);
+             SaveChanges(query,dt);
+             Console.WriteLine("Added");
+        }
+ 
+        public static void ListCustomers()
+        {
+            // Write your code to list all customers
+            string query="select * from Customers;";
+            DataTable dt = GetDataTable(query);
+            Console.WriteLine("Customers : ");
+            foreach(DataRow row in dt.Rows){
+                Console.WriteLine($"Customer ID: {row[0]}, Name: {row[1]} {row[2]}, Email: {row[3]}, PhoneNumber: {row[4]}");
+            }
+        }
+ 
+        public static void UpdateCustomerEmail(int customerID, string newEmail)
+        {
+            // Write your code here to update the email of a customer
+            string query = $"select * from Customers where CustomerID = {customerID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0]["Email"]=newEmail;
+                SaveChanges(query,dt);
+                Console.WriteLine("Updated");
+            }
+            else{
+                Console.WriteLine("Not Updated");
+ 
+            }
+        }
+ 
+        public static void DeleteCustomer(int customerID)
+        {
+           
+            // Write your code to delete the customer using CustomerID
+              string query = $"select * from Customers where CustomerID = {customerID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0].Delete();
+                SaveChanges(query,dt);
+                Console.WriteLine("DEleted");
+            }
+            else{
+                Console.WriteLine("Not DEleted");
+ 
+            }
+        }
+ 
+        public static SqlConnection GetConnection(){
+            return new SqlConnection(connectionString);
+        }
+        public static DataTable GetDataTable(string query){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+        }
+        public static void SaveChanges(string query,DataTable dt){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                adapter.Update(dt);
+            }
+        }
+ 
+    }
+}
+ 
+
+
+
+
+
+
+W3 D1 S3 C3
+.login-form{
+    background-color: rgb(255,255,255);
+    border-radius: 5px;
+}
+ 
+h1{
+    color: rgb(255,0,0);
+    text-align: center;
+}
+ 
+#submitButton{
+    background-color: rgb(0,0,255);
+    font-size: 16px;
+}
+see lessReply
+W3 D1 S3 C2
+header{
+    background-color: #5ed33a;
+    text-align: center;
+}
+ 
+h2{
+    text-align: center;
+    color: #0779e4;
+}
+ 
+img{
+    border-radius: 5px;
+   
+}
+ 
+.image-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+see lessReply
+ 
+
+
+
+
+
+
+
+W3 D1 S2 C1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <H2>Register</H2>
+    <p>Username: <input type="text" id="username" /></p>
+    <p>Email: <input type="text" id="email" /></p>
+    <p>Password: <input type="text" id="password" /></p>
+    <p>Confirm Password: <input type="text" id="confirmPassword" /></p>
+    <button id="registerButton">Register</button>
+   
+</body>
+</html>
+ 
+W3 D1 S2 C2
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Feedback</h2>
+  <p>Name <input id="name"/></p>
+  <p>Email <input id="email"/></p>
+  <p>Feedback <input id="feedback"/></p>
+  <p>Rate your experience
+  <select name="" id="rating">
+    <option value="#">select a rating</option>
+    <option value="">1-Poor</option>
+    <option value="">2-Fair</option>
+    <option value="">3-Good</option>
+    <option value="">4-Very Good</option>
+    <option value="">5-Excellent</option>
+  </select>
+ </p>
+ <button id="Submit Feedback" type="submit">Submit Feedback</button>
+ 
+</body>
+</html>
+ 
+W3 D1 S2 C3
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML PRACTICE</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <h1>One</h1>
+    <h2>Two</h2>
+    <h3>Three</h3>
+    <h4>Four</h4>
+    <h5>Five</h5>
+    <h6>six</h6>
+</body>
+</html>
+ 
+W3 D1 S3 C1
+.heading{
+    text-align: center;
+}
+ 
+form{
+    width: 380px;
+    background-color: rgb(255,255,255);
+    border-radius: 8px;
+}
+ 
+input{
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+ 
+button{
+    background-color: rgb(76, 175, 80);
+}
+ 
+.asterisk{
+    color: rgb(255, 0, 0);
+}
+ 
+W3 D1 S3 C3
+.login-form{
+    background-color: rgb(255,255,255);
+    border-radius: 5px;
+}
+ 
+h1{
+    color: rgb(255,0,0);
+    text-align: center;
+}
+ 
+#submitButton{
+    background-color: rgb(0,0,255);
+    font-size: 16px;
+}
+ 
+W3 D1 S3 C2
+header{
+    background-color: #5ed33a;
+    text-align: center;
+}
+ 
+h2{
+    text-align: center;
+    color: #0779e4;
+}
+ 
+img{
+    border-radius: 5px;
+   
+}
+ 
+.image-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
