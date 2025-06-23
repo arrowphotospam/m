@@ -1,0 +1,850 @@
+w3 d1 s1 3
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using DisconnectedArchitecture.Models;
+ 
+namespace DisconnectedArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=False;Persist Security Info =False;Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Customer
+            // 2. List Customers
+            // 3. Update Customer Email
+            // 4. Delete Customer
+            // 5. Exit
+            Console.WriteLine("Menu:");
+            Console.WriteLine("1.Add");
+            Console.WriteLine("2.List");
+            Console.WriteLine("3.Update");
+            Console.WriteLine("4.Delete");
+            Console.WriteLine("5.Exit");
+            int choice =int.Parse(Console.ReadLine());
+            switch(choice){
+                case 1: Customer c=new Customer();
+                      Console.Write("Id: ");c.CustomerID=int.Parse(Console.ReadLine());
+                      Console.Write("FirstName: ");c.FirstName=Console.ReadLine();
+                      Console.Write("LastName: ");c.LastName=Console.ReadLine();
+                      Console.Write("Email: ");c.Email=Console.ReadLine();
+                      Console.Write("PhoneNumber: ");c.PhoneNumber=Console.ReadLine();
+                      AddCustomer(c);break;
+                case 2:ListCustomers();break;
+                case 3:Console.Write("Id: ");int id=int.Parse(Console.ReadLine());
+                       Console.Write("New EMail: ");string newEmail=Console.ReadLine();
+                       UpdateCustomerEmail(id,newEmail);break;
+                case 4:Console.Write("Id: ");int id1=int.Parse(Console.ReadLine());
+                       DeleteCustomer(id1);break;
+                case 5:Console.WriteLine("exiting application...");break;
+                default:Console.WriteLine("Invalid choice");break;
+            }
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddCustomer(Customer customer)
+        {
+             // Write your code to add a new customer
+             string query="select * from Customers;";
+             DataTable dt=GetDataTable(query);
+             DataRow dr = dt.NewRow();
+             dr[0]=customer.CustomerID;
+             dr[1]=customer.FirstName;
+             dr[2]=customer.LastName;
+             dr[3]=customer.Email;
+             dr[4]=customer.PhoneNumber;
+             dt.Rows.Add(dr);
+             SaveChanges(query,dt);
+             Console.WriteLine("Added");
+        }
+ 
+        public static void ListCustomers()
+        {
+            // Write your code to list all customers
+            string query="select * from Customers;";
+            DataTable dt = GetDataTable(query);
+            Console.WriteLine("Customers : ");
+            foreach(DataRow row in dt.Rows){
+                Console.WriteLine($"Customer ID: {row[0]}, Name: {row[1]} {row[2]}, Email: {row[3]}, PhoneNumber: {row[4]}");
+            }
+        }
+ 
+        public static void UpdateCustomerEmail(int customerID, string newEmail)
+        {
+            // Write your code here to update the email of a customer
+            string query = $"select * from Customers where CustomerID = {customerID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0]["Email"]=newEmail;
+                SaveChanges(query,dt);
+                Console.WriteLine("Updated");
+            }
+            else{
+                Console.WriteLine("Not Updated");
+ 
+            }
+        }
+ 
+        public static void DeleteCustomer(int customerID)
+        {
+           
+            // Write your code to delete the customer using CustomerID
+              string query = $"select * from Customers where CustomerID = {customerID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0].Delete();
+                SaveChanges(query,dt);
+                Console.WriteLine("DEleted");
+            }
+            else{
+                Console.WriteLine("Not DEleted");
+ 
+            }
+        }
+ 
+        public static SqlConnection GetConnection(){
+            return new SqlConnection(connectionString);
+        }
+        public static DataTable GetDataTable(string query){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+        }
+        public static void SaveChanges(string query,DataTable dt){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                adapter.Update(dt);
+            }
+        }
+ 
+    }
+}
+ 
+ 
+ 
+w3 d1 s1 2
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using DisconnectedArchitecture.Models;
+ 
+namespace DisconnectedArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123; server=localhost; Database=appdb; trusted_connection=false; Persist Security Info= False;Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Employee
+            // 2. List Employees
+            // 3. Update Employee Salary
+            // 4. Delete Employee
+            // 5. Exit
+            Console.WriteLine("Menu: ");
+            Console.WriteLine("1. Add Employee");
+            Console.WriteLine("2. List Employee");
+            Console.WriteLine("3. Update Employee");
+            Console.WriteLine("4. Delete Employee");
+            Console.WriteLine("5. Exit");
+            int choice = int.Parse(Console.ReadLine());
+            switch(choice){
+                case 1:
+                        Employee e =new Employee();
+                        Console.WriteLine("Id: ");e.EmployeeID=int.Parse(Console.ReadLine());
+                        Console.WriteLine("FirstName: ");e.FirstName=Console.ReadLine();
+                        Console.WriteLine("LastName: ");e.LastName=Console.ReadLine();
+                        Console.WriteLine("Department: ");e.Department=Console.ReadLine();
+                        Console.WriteLine("Salary: ");e.Salary=decimal.Parse(Console.ReadLine());
+                        AddEmployee(e);break;
+                case 2: ListEmployees();break;
+                case 3: Console.WriteLine("Employee ID :  ");int id=int.Parse(Console.ReadLine());
+                        Console.WriteLine("newSalary: ");decimal sal=decimal.Parse(Console.ReadLine());
+                        UpdateEmployeeSalary(id,sal);break;
+                case 4:Console.WriteLine("Employee ID :  ");int id1=int.Parse(Console.ReadLine());
+                       DeleteEmployee(id1);break;
+                case 5:Console.WriteLine("Exiting application...");break;
+                default:Console.WriteLine("Invalid Choice");break;
+            }
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddEmployee(Employee employee)
+        {
+           
+            string query="select * from Employees;";
+            DataTable dt =GetDataTable(query);
+            DataRow dr=dt.NewRow();
+            dr[0]=employee.EmployeeID;
+            dr[1]=employee.FirstName;
+            dr[2]=employee.LastName;
+            dr[3]=employee.Department;
+            dr[4]=employee.Salary;
+            dt.Rows.Add(dr);
+            SaveChanges(query,dt);
+            Console.WriteLine("Added Successfully.");
+        }
+ 
+        public static void ListEmployees()
+        {
+            // Write your code to ListEmployees
+             string query="select * from Employees;";
+             DataTable dt =GetDataTable(query);
+             Console.WriteLine("List of EMployees: ");
+             foreach(DataRow row in dt.Rows){
+                   Console.WriteLine($"EmployeeId :{row[0]}, Name: {row[1]} {row[2]}, Department: {row[3]},Salary: {row[4]}");
+             }
+        }
+ 
+        public static void UpdateEmployeeSalary(int employeeID, decimal newSalary)
+        {
+            // Write your code here to update the salary of an employee
+            string query = $"select * from Employees where EmployeeID={employeeID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+               
+                dt.Rows[0]["Salary"]=newSalary;
+               
+                SaveChanges(query,dt);
+                Console.WriteLine("Updated");
+            }
+            else{
+                Console.WriteLine("Not found");
+            }
+        }
+ 
+        public static void DeleteEmployee(int  employeeID)
+        {
+            // Write your code to delete the Employee using EmployeeID
+            string query = $"Select * from Employees where EmployeeID={employeeID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0].Delete();
+                SaveChanges(query,dt);
+                Console.WriteLine("Deleted");
+            }
+            else{
+                Console.WriteLine("Not found");
+            }
+        }
+ 
+        public static SqlConnection GetConnection(){
+            return new SqlConnection(connectionString);
+        }
+        public static DataTable GetDataTable(string query){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                DataTable dt=new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+        }
+        public static void SaveChanges(string query,DataTable dt){
+            using(SqlConnection connection =GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                adapter.Update(dt);
+ 
+            }
+        }
+    }
+}
+ 
+ 
+ 
+w3 d1 s1 1
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using DisconnectedArchitecture.Models;
+using System.Runtime.InteropServices;
+ 
+namespace DisconnectArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123; server=localhost; Database=appdb; trusted_connection=false; Persist Security Info=False; Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Product
+            // 2. List Products
+            // 3. Update Stock Quantity
+            // 4. Delete Product
+            // 5. Exit
+ 
+            Console.WriteLine("Menu: ");
+            Console.WriteLine("1. Add Product");
+            Console.WriteLine("2. List Products");
+            Console.WriteLine("3. Update Product");
+            Console.WriteLine("4. Delete Product");
+            Console.WriteLine("5. Exit");
+            Console.Write("Enter your choice: ");
+            int choice = int.Parse(Console.ReadLine());
+            switch (choice)
+            {
+                case 1:
+                       Product p=new Product();
+                       Console.Write("Product Id: ");
+                       p.ProductID=int.Parse(Console.ReadLine());
+                       Console.Write("Product Name: ");
+                       p.ProductName=Console.ReadLine();
+                       Console.Write("Price: ");
+                       p.Price = decimal.Parse(Console.ReadLine());
+                       Console.Write("Stock: ");
+                       p.StockQuantity=int.Parse(Console.ReadLine());
+                       AddProduct(p);break;
+                case 2: ListProducts();break;
+                case 3: Console.Write("Enter the name of the product to update stock quantity: ");
+                        string name=Console.ReadLine();
+                        Console.Write("Enter the new Stock Quantity: ");
+                        int stock=int.Parse(Console.ReadLine());
+                        UpdateProductStock(name,stock);break;
+                case 4: Console.Write("Enter the ProductId of the product to delete: ");
+                        int id=int.Parse(Console.ReadLine());
+                        DeleteProduct(id);break;
+                case 5: Console.WriteLine("Exiting the application...");break;
+                default: Console.WriteLine("Invalid choice!");break;
+            }
+ 
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddProduct(Product product)
+        {
+            // Write your code to add new product
+            string query = "select * from Products;";
+            using(SqlConnection connection=new SqlConnection(connectionString)){
+                SqlDataAdapter adapter =new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                DataRow dr = dt.NewRow();
+                dr[0]=product.ProductID;
+                dr[1]=product.ProductName;
+                dr[2]=product.Price;
+                dr[3]=product.StockQuantity;
+                dt.Rows.Add(dr);
+                adapter.Update(dt);
+                Console.WriteLine("Added Succesfully");
+               
+            }
+        }
+ 
+        public static void ListProducts()
+        {
+            // Write your code to ListProducts
+           
+            string query = "select * from Products;";
+            using(SqlConnection connection=new SqlConnection(connectionString)){
+                SqlDataAdapter adapter =new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                foreach(DataRow row in dt.Rows){
+                    Console.WriteLine($"ProductID: {row[0]}, ProductName: {row[1]}, Price: {row[2]}, StockQuantity: {row[3]}");
+                }
+               
+            }
+        }
+ 
+        public static void UpdateProductStock(string productName, int newStockQuantity)
+        {
+            // Write your code to update the StockQuantity by using ProductName
+            string query = $"select * from Products where ProductName='{productName}';";
+            using(SqlConnection connection = new SqlConnection(connectionString)){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataTable dt=new DataTable();
+                adapter.Fill(dt);
+                if(dt.Rows.Count>0){
+                    dt.Rows[0]["StockQuantity"]=newStockQuantity;
+                    adapter.Update(dt);
+                    Console.WriteLine("updated successfully.");
+                }
+                else{
+                    Console.WriteLine("not Found");
+                }
+            }
+        }
+ 
+        public static void DeleteProduct(int productID)
+        {
+            // Write your code to delete the Product using ProductID
+            string query =$"select * from Products where ProductID={productID};";
+            using(SqlConnection connection = new SqlConnection(connectionString)){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                if(dt.Rows.Count>0){
+                    dt.Rows[0].Delete();
+                    adapter.Update(dt);
+                    Console.WriteLine("Deleted Product");
+                }
+                else Console.WriteLine("Not Found.");
+            }
+        }
+ 
+    }
+}
+ 
+ 
+
+
+/////////////////////////////////////////////////////////////
+
+
+s1q3                                                                                                                                       using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using DisconnectedArchitecture.Models;
+ 
+namespace DisconnectedArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=False;Persist Security Info =False;Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Customer
+            // 2. List Customers
+            // 3. Update Customer Email
+            // 4. Delete Customer
+            // 5. Exit
+            Console.WriteLine("Menu:");
+            Console.WriteLine("1.Add");
+            Console.WriteLine("2.List");
+            Console.WriteLine("3.Update");
+            Console.WriteLine("4.Delete");
+            Console.WriteLine("5.Exit");
+            int choice =int.Parse(Console.ReadLine());
+            switch(choice){
+                case 1: Customer c=new Customer();
+                      Console.Write("Id: ");c.CustomerID=int.Parse(Console.ReadLine());
+                      Console.Write("FirstName: ");c.FirstName=Console.ReadLine();
+                      Console.Write("LastName: ");c.LastName=Console.ReadLine();
+                      Console.Write("Email: ");c.Email=Console.ReadLine();
+                      Console.Write("PhoneNumber: ");c.PhoneNumber=Console.ReadLine();
+                      AddCustomer(c);break;
+                case 2:ListCustomers();break;
+                case 3:Console.Write("Id: ");int id=int.Parse(Console.ReadLine());
+                       Console.Write("New EMail: ");string newEmail=Console.ReadLine();
+                       UpdateCustomerEmail(id,newEmail);break;
+                case 4:Console.Write("Id: ");int id1=int.Parse(Console.ReadLine());
+                       DeleteCustomer(id1);break;
+                case 5:Console.WriteLine("exiting application...");break;
+                default:Console.WriteLine("Invalid choice");break;
+            }
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddCustomer(Customer customer)
+        {
+             // Write your code to add a new customer
+             string query="select * from Customers;";
+             DataTable dt=GetDataTable(query);
+             DataRow dr = dt.NewRow();
+             dr[0]=customer.CustomerID;
+             dr[1]=customer.FirstName;
+             dr[2]=customer.LastName;
+             dr[3]=customer.Email;
+             dr[4]=customer.PhoneNumber;
+             dt.Rows.Add(dr);
+             SaveChanges(query,dt);
+             Console.WriteLine("Added");
+        }
+ 
+        public static void ListCustomers()
+        {
+            // Write your code to list all customers
+            string query="select * from Customers;";
+            DataTable dt = GetDataTable(query);
+            Console.WriteLine("Customers : ");
+            foreach(DataRow row in dt.Rows){
+                Console.WriteLine($"Customer ID: {row[0]}, Name: {row[1]} {row[2]}, Email: {row[3]}, PhoneNumber: {row[4]}");
+            }
+        }
+ 
+        public static void UpdateCustomerEmail(int customerID, string newEmail)
+        {
+            // Write your code here to update the email of a customer
+            string query = $"select * from Customers where CustomerID = {customerID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0]["Email"]=newEmail;
+                SaveChanges(query,dt);
+                Console.WriteLine("Updated");
+            }
+            else{
+                Console.WriteLine("Not Updated");
+ 
+            }
+        }
+ 
+        public static void DeleteCustomer(int customerID)
+        {
+           
+            // Write your code to delete the customer using CustomerID
+              string query = $"select * from Customers where CustomerID = {customerID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0].Delete();
+                SaveChanges(query,dt);
+                Console.WriteLine("DEleted");
+            }
+            else{
+                Console.WriteLine("Not DEleted");
+ 
+            }
+        }
+ 
+        public static SqlConnection GetConnection(){
+            return new SqlConnection(connectionString);
+        }
+        public static DataTable GetDataTable(string query){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+        }
+        public static void SaveChanges(string query,DataTable dt){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                adapter.Update(dt);
+            }
+        }
+ 
+    }
+}
+ 
+ 
+s1q2                                                                                                                                       using System;
+using System.Data;
+using System.Data.SqlClient;
+using DisconnectedArchitecture.Models;
+ 
+namespace DisconnectedArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123; server=localhost; Database=appdb; trusted_connection=false; Persist Security Info= False;Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Employee
+            // 2. List Employees
+            // 3. Update Employee Salary
+            // 4. Delete Employee
+            // 5. Exit
+            Console.WriteLine("Menu: ");
+            Console.WriteLine("1. Add Employee");
+            Console.WriteLine("2. List Employee");
+            Console.WriteLine("3. Update Employee");
+            Console.WriteLine("4. Delete Employee");
+            Console.WriteLine("5. Exit");
+            int choice = int.Parse(Console.ReadLine());
+            switch(choice){
+                case 1:
+                        Employee e =new Employee();
+                        Console.WriteLine("Id: ");e.EmployeeID=int.Parse(Console.ReadLine());
+                        Console.WriteLine("FirstName: ");e.FirstName=Console.ReadLine();
+                        Console.WriteLine("LastName: ");e.LastName=Console.ReadLine();
+                        Console.WriteLine("Department: ");e.Department=Console.ReadLine();
+                        Console.WriteLine("Salary: ");e.Salary=decimal.Parse(Console.ReadLine());
+                        AddEmployee(e);break;
+                case 2: ListEmployees();break;
+                case 3: Console.WriteLine("Employee ID :  ");int id=int.Parse(Console.ReadLine());
+                        Console.WriteLine("newSalary: ");decimal sal=decimal.Parse(Console.ReadLine());
+                        UpdateEmployeeSalary(id,sal);break;
+                case 4:Console.WriteLine("Employee ID :  ");int id1=int.Parse(Console.ReadLine());
+                       DeleteEmployee(id1);break;
+                case 5:Console.WriteLine("Exiting application...");break;
+                default:Console.WriteLine("Invalid Choice");break;
+            }
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddEmployee(Employee employee)
+        {
+           
+            string query="select * from Employees;";
+            DataTable dt =GetDataTable(query);
+            DataRow dr=dt.NewRow();
+            dr[0]=employee.EmployeeID;
+            dr[1]=employee.FirstName;
+            dr[2]=employee.LastName;
+            dr[3]=employee.Department;
+            dr[4]=employee.Salary;
+            dt.Rows.Add(dr);
+            SaveChanges(query,dt);
+            Console.WriteLine("Added Successfully.");
+        }
+ 
+        public static void ListEmployees()
+        {
+            // Write your code to ListEmployees
+             string query="select * from Employees;";
+             DataTable dt =GetDataTable(query);
+             Console.WriteLine("List of EMployees: ");
+             foreach(DataRow row in dt.Rows){
+                   Console.WriteLine($"EmployeeId :{row[0]}, Name: {row[1]} {row[2]}, Department: {row[3]},Salary: {row[4]}");
+             }
+        }
+ 
+        public static void UpdateEmployeeSalary(int employeeID, decimal newSalary)
+        {
+            // Write your code here to update the salary of an employee
+            string query = $"select * from Employees where EmployeeID={employeeID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+               
+                dt.Rows[0]["Salary"]=newSalary;
+               
+                SaveChanges(query,dt);
+                Console.WriteLine("Updated");
+            }
+            else{
+                Console.WriteLine("Not found");
+            }
+        }
+ 
+        public static void DeleteEmployee(int  employeeID)
+        {
+            // Write your code to delete the Employee using EmployeeID
+            string query = $"Select * from Employees where EmployeeID={employeeID};";
+            DataTable dt=GetDataTable(query);
+            if(dt.Rows.Count>0){
+                dt.Rows[0].Delete();
+                SaveChanges(query,dt);
+                Console.WriteLine("Deleted");
+            }
+            else{
+                Console.WriteLine("Not found");
+            }
+        }
+ 
+        public static SqlConnection GetConnection(){
+            return new SqlConnection(connectionString);
+        }
+        public static DataTable GetDataTable(string query){
+            using(SqlConnection connection = GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                DataTable dt=new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+        }
+        public static void SaveChanges(string query,DataTable dt){
+            using(SqlConnection connection =GetConnection()){
+                SqlDataAdapter adapter = new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                adapter.Update(dt);
+ 
+            }
+        }
+    }
+}
+ 
+ 
+s1q1                                                                                                                                       using System;
+using System.Data;
+using System.Data.SqlClient;
+using DisconnectedArchitecture.Models;
+using System.Runtime.InteropServices;
+ 
+namespace DisconnectArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa; password=examlyMssql@123; server=localhost; Database=appdb; trusted_connection=false; Persist Security Info=False; Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {
+ 
+            // Write your Disconnected Architecture console app here
+            // 1. Add Product
+            // 2. List Products
+            // 3. Update Stock Quantity
+            // 4. Delete Product
+            // 5. Exit
+ 
+            Console.WriteLine("Menu: ");
+            Console.WriteLine("1. Add Product");
+            Console.WriteLine("2. List Products");
+            Console.WriteLine("3. Update Product");
+            Console.WriteLine("4. Delete Product");
+            Console.WriteLine("5. Exit");
+            Console.Write("Enter your choice: ");
+            int choice = int.Parse(Console.ReadLine());
+            switch (choice)
+            {
+                case 1:
+                       Product p=new Product();
+                       Console.Write("Product Id: ");
+                       p.ProductID=int.Parse(Console.ReadLine());
+                       Console.Write("Product Name: ");
+                       p.ProductName=Console.ReadLine();
+                       Console.Write("Price: ");
+                       p.Price = decimal.Parse(Console.ReadLine());
+                       Console.Write("Stock: ");
+                       p.StockQuantity=int.Parse(Console.ReadLine());
+                       AddProduct(p);break;
+                case 2: ListProducts();break;
+                case 3: Console.Write("Enter the name of the product to update stock quantity: ");
+                        string name=Console.ReadLine();
+                        Console.Write("Enter the new Stock Quantity: ");
+                        int stock=int.Parse(Console.ReadLine());
+                        UpdateProductStock(name,stock);break;
+                case 4: Console.Write("Enter the ProductId of the product to delete: ");
+                        int id=int.Parse(Console.ReadLine());
+                        DeleteProduct(id);break;
+                case 5: Console.WriteLine("Exiting the application...");break;
+                default: Console.WriteLine("Invalid choice!");break;
+            }
+ 
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddProduct(Product product)
+        {
+            // Write your code to add new product
+            string query = "select * from Products;";
+            using(SqlConnection connection=new SqlConnection(connectionString)){
+                SqlDataAdapter adapter =new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                DataRow dr = dt.NewRow();
+                dr[0]=product.ProductID;
+                dr[1]=product.ProductName;
+                dr[2]=product.Price;
+                dr[3]=product.StockQuantity;
+                dt.Rows.Add(dr);
+                adapter.Update(dt);
+                Console.WriteLine("Added Succesfully");
+               
+            }
+        }
+ 
+        public static void ListProducts()
+        {
+            // Write your code to ListProducts
+           
+            string query = "select * from Products;";
+            using(SqlConnection connection=new SqlConnection(connectionString)){
+                SqlDataAdapter adapter =new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataTable dt =new DataTable();
+                adapter.Fill(dt);
+                foreach(DataRow row in dt.Rows){
+                    Console.WriteLine($"ProductID: {row[0]}, ProductName: {row[1]}, Price: {row[2]}, StockQuantity: {row[3]}");
+                }
+               
+            }
+        }
+ 
+        public static void UpdateProductStock(string productName, int newStockQuantity)
+        {
+            // Write your code to update the StockQuantity by using ProductName
+            string query = $"select * from Products where ProductName='{productName}';";
+            using(SqlConnection connection = new SqlConnection(connectionString)){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataTable dt=new DataTable();
+                adapter.Fill(dt);
+                if(dt.Rows.Count>0){
+                    dt.Rows[0]["StockQuantity"]=newStockQuantity;
+                    adapter.Update(dt);
+                    Console.WriteLine("updated successfully.");
+                }
+                else{
+                    Console.WriteLine("not Found");
+                }
+            }
+        }
+ 
+        public static void DeleteProduct(int productID)
+        {
+            // Write your code to delete the Product using ProductID
+            string query =$"select * from Products where ProductID={productID};";
+            using(SqlConnection connection = new SqlConnection(connectionString)){
+                SqlDataAdapter adapter=new SqlDataAdapter(query,connection);
+                SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                if(dt.Rows.Count>0){
+                    dt.Rows[0].Delete();
+                    adapter.Update(dt);
+                    Console.WriteLine("Deleted Product");
+                }
+                else Console.WriteLine("Not Found.");
+            }
+        }
+ 
+    }
+}
